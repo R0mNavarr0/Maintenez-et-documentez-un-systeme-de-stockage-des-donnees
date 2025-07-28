@@ -3,6 +3,7 @@ import kagglehub
 from pymongo import MongoClient
 import time
 from pymongo.errors import ServerSelectionTimeoutError
+import os
 
 path = kagglehub.dataset_download("prasad22/healthcare-dataset")
 
