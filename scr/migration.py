@@ -3,6 +3,7 @@ import kagglehub
 from pymongo import MongoClient
 import time
 from pymongo.errors import ServerSelectionTimeoutError
+import os
 
 path = kagglehub.dataset_download("prasad22/healthcare-dataset")
 
@@ -13,7 +14,10 @@ df['Name'] = df['Name'].str.upper()
 df['Date of Admission'] =  pd.to_datetime(df['Date of Admission'])
 df['Discharge Date'] =  pd.to_datetime(df['Discharge Date'])
 
-client = MongoClient('mongodb://mongodb:27017', serverSelectionTimeoutMS=1000)
+username = os.getenv("MONGO_USER")
+password = os.getenv("MONGO_PASSWORD")
+
+client = MongoClient(f"mongodb://{username}:{password}@mongodb:27017/", serverSelectionTimeoutMS=1000)
 
 # Attente active jusqu'à ce que MongoDB soit prêt
 for _ in range(30):  # max ~30s
