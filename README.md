@@ -90,4 +90,24 @@ e. Il vérifie :
  - Que les colonnes présentes dans les deux sources sont les mêmes.
  - Que la somme et la moyenne des colonnes numériques sont identiques.
 
-
+## 🗺️ Schéma base de données MongoDB
+```bash
+{
+    _id: ObjectId(),
+    Name: String,
+    Age: Int,
+    Gender: String,
+    Blood Type: String,
+    Medical Condition: String,
+    Date of Admission: Datetime,
+    Doctor: String,
+    Hospital: String,
+    Insurance Provider: String,
+    Billing Amount: Float,
+    Room Number: Int,
+    Admission Type: String,
+    Discharge Date: Datetime,
+    Medication: String,
+    Test Results: String
+  }
+```
