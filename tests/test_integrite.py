@@ -4,6 +4,7 @@ import pytest
 import kagglehub
 import time
 from pymongo.errors import ServerSelectionTimeoutError
+import os
 
 @pytest.fixture(scope="module")
 def dataframes():
@@ -14,7 +15,10 @@ def dataframes():
     df_csv['Date of Admission'] = pd.to_datetime(df_csv['Date of Admission'])
     df_csv['Discharge Date'] = pd.to_datetime(df_csv['Discharge Date'])
 
-    client = MongoClient("mongodb://mongodb:27017", serverSelectionTimeoutMS=1000)
+    username = os.getenv("MONGO_INITDB_ROOT_USERNAME")
+    password = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
+
+    client = MongoClient(f"mongodb://{username}:{password}@mongodb:27017/?authSource=admin",serverSelectionTimeoutMS=1000)
     # Attente active jusqu'à ce que MongoDB soit prêt
     for _ in range(30):  # max ~30s
         try:
