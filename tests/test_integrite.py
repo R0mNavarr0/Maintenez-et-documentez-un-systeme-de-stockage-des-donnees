@@ -1,3 +1,4 @@
+#Importation des packages nécessaires
 import pandas as pd
 from pymongo import MongoClient
 import pytest
@@ -7,6 +8,7 @@ from pymongo.errors import ServerSelectionTimeoutError
 import os
 
 @pytest.fixture(scope="module")
+#Fonction pour récupérer le dataset Kaggle et créer un dataframe "df_mongodb"
 def dataframes():
     path = kagglehub.dataset_download("prasad22/healthcare-dataset")
     df_csv = pd.read_csv(path + "/healthcare_dataset.csv")
@@ -38,14 +40,17 @@ def dataframes():
 
     return df_csv, df_mongo
 
+#Fonction test du nombre d'enregistrements
 def test_nombre_enregistrements(dataframes):
     df_csv, df_mongo = dataframes
     assert len(df_csv) == len(df_mongo), "Nombre de lignes différent entre CSV et MongoDB"
 
+#Fonction test de la structure de données
 def test_colonnes_identiques(dataframes):
     df_csv, df_mongo = dataframes
     assert set(df_csv.columns) == set(df_mongo.columns), "Colonnes différentes entre CSV et MongoDB"
 
+#Fonction test sur les colonnes numériques
 def test_somme_colonnes_numeriques(dataframes):
     df_csv, df_mongo = dataframes
     col_num = df_csv.select_dtypes(include=['number']).columns
