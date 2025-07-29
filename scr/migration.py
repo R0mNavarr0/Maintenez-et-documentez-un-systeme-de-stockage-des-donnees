@@ -18,11 +18,12 @@ df['Date of Admission'] =  pd.to_datetime(df['Date of Admission'])
 df['Discharge Date'] =  pd.to_datetime(df['Discharge Date'])
 
 #Système d'authentification avec ID et MDP
-username = os.getenv("MONGO_INITDB_ROOT_USERNAME")
-password = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
+username = os.environ["APP_WRITER_USER"]
+password = os.environ["APP_WRITER_PASSWORD"]
+db_name = os.environ["MONGO_DB_NAME"]
 
 #Connection à l'instance MongoDB
-client = MongoClient(f"mongodb://{username}:{password}@mongodb:27017/?authSource=admin",serverSelectionTimeoutMS=1000)
+client = MongoClient(f"mongodb://{username}:{password}@mongodb:27017/?authSource={db_name}",serverSelectionTimeoutMS=5000)
 
 # Attente active jusqu'à ce que MongoDB soit prêt
 for _ in range(30):  # max ~30s

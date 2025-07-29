@@ -17,10 +17,11 @@ def dataframes():
     df_csv['Date of Admission'] = pd.to_datetime(df_csv['Date of Admission'])
     df_csv['Discharge Date'] = pd.to_datetime(df_csv['Discharge Date'])
 
-    username = os.getenv("MONGO_INITDB_ROOT_USERNAME")
-    password = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
+    username = os.environ["APP_WRITER_USER"]
+    password = os.environ["APP_WRITER_PASSWORD"]
+    db_name = os.environ["MONGO_DB_NAME"]
 
-    client = MongoClient(f"mongodb://{username}:{password}@mongodb:27017/?authSource=admin",serverSelectionTimeoutMS=1000)
+    client = MongoClient(f"mongodb://{username}:{password}@mongodb:27017/?authSource={db_name}",serverSelectionTimeoutMS=5000)
     # Attente active jusqu'à ce que MongoDB soit prêt
     for _ in range(30):  # max ~30s
         try:
