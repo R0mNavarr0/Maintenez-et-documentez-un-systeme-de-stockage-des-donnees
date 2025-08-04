@@ -6,38 +6,32 @@ import kagglehub
 import time
 from pymongo.errors import ServerSelectionTimeoutError
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from scr.migration import migrer_vers_mongo
 
 @pytest.fixture(scope="module")
 #Fonction pour récupérer le dataset Kaggle et créer un dataframe "df_mongodb"
 def dataframes():
+    # Appelle directement ta fonction de migration
+    migrer_vers_mongo()
+
+    # Lecture CSV pour comparaison
     path = kagglehub.dataset_download("prasad22/healthcare-dataset")
     df_csv = pd.read_csv(path + "/healthcare_dataset.csv")
-
     df_csv['Name'] = df_csv['Name'].str.upper()
     df_csv['Date of Admission'] = pd.to_datetime(df_csv['Date of Admission'])
     df_csv['Discharge Date'] = pd.to_datetime(df_csv['Discharge Date'])
 
+    # Connexion Mongo
     username = os.environ["APP_WRITER_USER"]
     password = os.environ["APP_WRITER_PASSWORD"]
     db_name = os.environ["MONGO_DB_NAME"]
-
-    client = MongoClient(f"mongodb://{username}:{password}@mongodb:27017/?authSource={db_name}",serverSelectionTimeoutMS=5000)
-    # Attente active jusqu'à ce que MongoDB soit prêt
-    for _ in range(30):  # max ~30s
-        try:
-            client.admin.command('ping')
-            print("MongoDB est prêt !")
-            break
-        except ServerSelectionTimeoutError:
-            print("En attente de MongoDB...")
-            time.sleep(1)
-    else:
-        print("MongoDB ne répond pas, abandon.")
-        exit(1)
+    client = MongoClient(f"mongodb://{username}:{password}@mongodb:27017/?authSource={db_name}", serverSelectionTimeoutMS=5000)
     db = client["base"]
     collection = db["ma_collection"]
-    docs_mongo = list(collection.find())
-    df_mongo = pd.DataFrame(docs_mongo).drop(columns=["_id"], errors="ignore")
+
+    df_mongo = pd.DataFrame(list(collection.find())).drop(columns=["_id"], errors="ignore")
 
     return df_csv, df_mongo
 
