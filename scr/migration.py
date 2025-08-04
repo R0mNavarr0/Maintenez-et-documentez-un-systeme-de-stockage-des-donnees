@@ -6,46 +6,48 @@ import time
 from pymongo.errors import ServerSelectionTimeoutError
 import os
 
-#Téléchargement du fichier CSV depuis l'API Kaggle
-path = kagglehub.dataset_download("prasad22/healthcare-dataset")
+def migrer_vers_mongo(client=None):
 
-df = pd.read_csv(path+'/healthcare_dataset.csv')
+    # 1. Télécharger et préparer les données
+    path = kagglehub.dataset_download("prasad22/healthcare-dataset")
+    df = pd.read_csv(path + '/healthcare_dataset.csv')
 
-#Transformation des données
-df['Name'] = df['Name'].str.upper()
+    df['Name'] = df['Name'].str.upper()
+    df['Date of Admission'] = pd.to_datetime(df['Date of Admission'])
+    df['Discharge Date'] = pd.to_datetime(df['Discharge Date'])
 
-df['Date of Admission'] =  pd.to_datetime(df['Date of Admission'])
-df['Discharge Date'] =  pd.to_datetime(df['Discharge Date'])
+    # 2. Connexion Mongo
+    username = os.environ["APP_WRITER_USER"]
+    password = os.environ["APP_WRITER_PASSWORD"]
+    db_name = os.environ["MONGO_DB_NAME"]
 
-#Système d'authentification avec ID et MDP
-username = os.environ["APP_WRITER_USER"]
-password = os.environ["APP_WRITER_PASSWORD"]
-db_name = os.environ["MONGO_DB_NAME"]
+    if client is None:
+        client = MongoClient(
+            f"mongodb://{username}:{password}@mongodb:27017/?authSource={db_name}",
+            serverSelectionTimeoutMS=5000
+        )
 
-#Connection à l'instance MongoDB
-client = MongoClient(f"mongodb://{username}:{password}@mongodb:27017/?authSource={db_name}",serverSelectionTimeoutMS=5000)
+    for _ in range(30):
+        try:
+            client.admin.command('ping')
+            print("MongoDB est prêt !")
+            break
+        except ServerSelectionTimeoutError:
+            print("En attente de MongoDB...")
+            time.sleep(1)
+    else:
+        print("MongoDB ne répond pas, abandon.")
+        exit(1)
 
-# Attente active jusqu'à ce que MongoDB soit prêt
-for _ in range(30):  # max ~30s
-    try:
-        client.admin.command('ping')
-        print("MongoDB est prêt !")
-        break
-    except ServerSelectionTimeoutError:
-        print("En attente de MongoDB...")
-        time.sleep(1)
-else:
-    print("MongoDB ne répond pas, abandon.")
-    exit(1)
+    db = client["base"]
 
-#Création de la base de données
-db = client['base']
+    collection = db["ma_collection"]
 
-#Création de la collection
-collection = db['ma_collection']
+    data = df.to_dict(orient='records')
 
-#Transformation du DataFrame Pandas en un dictionnaire pour insertion dans MongoDB
-data = df.to_dict(orient='records')
+    collection.delete_many({})
 
-#Insertion des données dans MongoDB
-collection.insert_many(data)
+    collection.insert_many(data)
+
+if __name__ == "__main__":
+    migrer_vers_mongo()
