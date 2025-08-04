@@ -15,4 +15,4 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Commande par défaut : à override dans docker-compose
-CMD ["python", "migration.py"]
+CMD ["python", "scr/migration.py"]
