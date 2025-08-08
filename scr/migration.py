@@ -10,7 +10,14 @@ def migrer_vers_mongo(client=None):
 
     # 1. Télécharger et préparer les données
     path = kagglehub.dataset_download("prasad22/healthcare-dataset")
-    df = pd.read_csv(path + '/healthcare_dataset.csv')
+
+    try :
+        df = pd.read_csv(path + '/healthcare_dataset.csv')
+    except MemoryError:
+        chuncks = []
+        for chunck in pd.read_csv(path + "/healthcare_dataset.csv", chunksize=5000):
+            chuncks.append(chunck)
+        df = pd.concat(chuncks, ignore_index=True)
 
     df['Name'] = df['Name'].str.upper()
     df['Date of Admission'] = pd.to_datetime(df['Date of Admission'])
@@ -24,20 +31,10 @@ def migrer_vers_mongo(client=None):
     if client is None:
         client = MongoClient(
             f"mongodb://{username}:{password}@mongodb:27017/?authSource={db_name}",
-            serverSelectionTimeoutMS=5000
+            serverSelectionTimeoutMS=5000,
+            maxPoolSize=50,
+            retryWrites=True
         )
-
-    for _ in range(30):
-        try:
-            client.admin.command('ping')
-            print("MongoDB est prêt !")
-            break
-        except ServerSelectionTimeoutError:
-            print("En attente de MongoDB...")
-            time.sleep(1)
-    else:
-        print("MongoDB ne répond pas, abandon.")
-        exit(1)
 
     db = client["base"]
 
