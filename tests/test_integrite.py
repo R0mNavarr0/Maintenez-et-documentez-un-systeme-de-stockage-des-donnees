@@ -39,7 +39,7 @@ class OptimizedDataFrameLoader:
             retryWrites=True
         )
         
-        db = self.client["base"]
+        db = self.client[db_name]
         self.collection = db["ma_collection"]
         
     def load_csv_data(self):

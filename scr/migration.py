@@ -36,7 +36,7 @@ def migrer_vers_mongo(client=None):
             retryWrites=True
         )
 
-    db = client["base"]
+    db = client[db_name]
 
     collection = db["ma_collection"]
 
