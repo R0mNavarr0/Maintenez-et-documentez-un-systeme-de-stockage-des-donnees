@@ -15,7 +15,8 @@ projet-migration-mongodb/
 ├── requirements.txt # Dépendances Python
 ├── Dockerfile # Image Docker pour Python
 ├── docker-compose.yml # Orchestration des conteneurs
-└── README.md # Documentation
+├── README.md # Documentation
+└── init.sh # rôles utilisateurs
 ```
 
 ## ⚙️ Prérequis
@@ -81,9 +82,10 @@ e. Il attend que MongoDB soit prêt avant d'insérer les données dans une colle
 
 ### 2. Tests - test_integrite.py
 Ce script contient une suite de tests automatisés pour vérifier la cohérence des données entre un fichier CSV et une collection MongoDB.\
-a. Il télécharge le dataset en format CSV avec l'API Kaggle.\
-b. Il charge et prépare les données CSV (mise en majuscules, conversion des dates).\
-c. Il se connecte à MongoDB, attend que le serveur soit prêt, puis récupère les documents depuis la collection "ma_collection" dans la base "base".\
+a. Il récupère la base MongoDB à partir du script de migration.\
+b. Il télécharge le dataset en format CSV avec l'API Kaggle.\
+c. Il charge et prépare les données CSV (mise en majuscules, conversion des dates).\
+d. Il se connecte à MongoDB, attend que le serveur soit prêt, puis récupère les documents depuis la collection "ma_collection" dans la base "base".\
 d. Il convertit ces documents en DataFrame Pandas pour comparaison.\
 e. Il vérifie :
  - Que le nombre d'enregistrements est identique entre CSV et MongoDB.
