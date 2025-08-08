@@ -37,11 +37,7 @@ git clone https://github.com/votre-utilisateur/projet-migration-mongodb.git
 cd projet-migration-mongodb
 ```
 
-### 2. Ajouter un fichier .env
-
-Afin de pouvoir exécuter les scripts et accéder à la base de données MongoDB, vous devez ajouter dans le dossier un fichier **.env** contenant les identifiants et mots de passe.
-
-### 3. Lancer les conteneurs
+### 2. Lancer les conteneurs
 
 ```bash
 docker compose up --build
@@ -82,15 +78,14 @@ e. Il attend que MongoDB soit prêt avant d'insérer les données dans une colle
 
 ### 2. Tests - test_integrite.py
 Ce script contient une suite de tests automatisés pour vérifier la cohérence des données entre un fichier CSV et une collection MongoDB.\
-a. Il récupère la base MongoDB à partir du script de migration.\
-b. Il télécharge le dataset en format CSV avec l'API Kaggle.\
-c. Il charge et prépare les données CSV (mise en majuscules, conversion des dates).\
-d. Il se connecte à MongoDB, attend que le serveur soit prêt, puis récupère les documents depuis la collection "ma_collection" dans la base "base".\
-d. Il convertit ces documents en DataFrame Pandas pour comparaison.\
-e. Il vérifie :
+a. Il appelle la migration à partir du script de migration.\
+b. Il charge le dataset en format CSV avec l'API Kaggle et prépare les données CSV (mise en majuscules, conversion des dates).\
+c. Il appelle la focntion permettant de récupérer les statistiques issues de MongoDB.\
+d. Il vérifie :
  - Que le nombre d'enregistrements est identique entre CSV et MongoDB.
  - Que les colonnes présentes dans les deux sources sont les mêmes.
  - Que la somme et la moyenne des colonnes numériques sont identiques.
+ - Que les distributions d'échantillions de chaque source soient semblables.
 
 ## 🗺️ Schéma base de données MongoDB
 ```bash
