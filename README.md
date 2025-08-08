@@ -80,7 +80,7 @@ e. Il attend que MongoDB soit prêt avant d'insérer les données dans une colle
 Ce script contient une suite de tests automatisés pour vérifier la cohérence des données entre un fichier CSV et une collection MongoDB.\
 a. Il appelle la migration à partir du script de migration.\
 b. Il charge le dataset en format CSV avec l'API Kaggle et prépare les données CSV (mise en majuscules, conversion des dates).\
-c. Il appelle la focntion permettant de récupérer les statistiques issues de MongoDB.\
+c. Il appelle la fonction permettant de récupérer les statistiques issues de MongoDB.\
 d. Il vérifie :
  - Que le nombre d'enregistrements est identique entre CSV et MongoDB.
  - Que les colonnes présentes dans les deux sources sont les mêmes.
