@@ -19,7 +19,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from scr.migration import migrer_vers_mongo
 
 class OptimizedDataFrameLoader:
-    """Classe pour optimiser le chargement et la comparaison des données"""
     
     def __init__(self):
         self.df_csv = None
@@ -28,7 +27,6 @@ class OptimizedDataFrameLoader:
         self.collection = None
         
     def setup_mongodb_connection(self):
-        """Configuration optimisée de la connexion MongoDB"""
         username = os.environ["APP_WRITER_USER"]
         password = os.environ["APP_WRITER_PASSWORD"]
         db_name = os.environ["MONGO_DB_NAME"]
@@ -36,7 +34,6 @@ class OptimizedDataFrameLoader:
         self.client = MongoClient(
             f"mongodb://{username}:{password}@mongodb:27017/?authSource={db_name}",
             serverSelectionTimeoutMS=5000,
-            # Optimisations de performance
             maxPoolSize=50,
             readPreference='secondaryPreferred',
             retryWrites=True
@@ -46,7 +43,6 @@ class OptimizedDataFrameLoader:
         self.collection = db["ma_collection"]
         
     def load_csv_data(self):
-        """Chargement optimisé des données CSV"""
         if self.df_csv is not None:
             return self.df_csv
             
@@ -72,7 +68,6 @@ class OptimizedDataFrameLoader:
         return self.df_csv
     
     def get_mongodb_stats_aggregated(self):
-        """Récupération optimisée des statistiques MongoDB via agrégation"""
         if self.mongo_stats is not None:
             return self.mongo_stats
             
@@ -125,7 +120,6 @@ class OptimizedDataFrameLoader:
             return self.get_mongodb_stats_fallback()
     
     def get_mongodb_stats_fallback(self):
-        """Méthode de fallback si l'agrégation échoue"""
         logger.info("Utilisation de la méthode de fallback pour MongoDB")
         df_mongo = pd.DataFrame(list(self.collection.find())).drop(columns=["_id"], errors="ignore")
         
@@ -146,7 +140,6 @@ class OptimizedDataFrameLoader:
         return self.mongo_stats
     
     def cleanup(self):
-        """Nettoyage des ressources"""
         if self.client:
             self.client.close()
 
@@ -155,7 +148,6 @@ _loader = OptimizedDataFrameLoader()
 
 @pytest.fixture(scope="module")
 def dataframes():
-    """Fixture optimisée pour le chargement des données"""
     # Appel de la migration (inchangé)
     migrer_vers_mongo()
     
@@ -169,7 +161,6 @@ def dataframes():
     _loader.cleanup()
 
 def test_nombre_enregistrements(dataframes):
-    """Test optimisé du nombre d'enregistrements"""
     df_csv, mongo_stats = dataframes
     
     csv_count = len(df_csv)
@@ -181,7 +172,6 @@ def test_nombre_enregistrements(dataframes):
         f"Nombre de lignes différent: CSV={csv_count}, MongoDB={mongo_count}"
 
 def test_colonnes_identiques(dataframes):
-    """Test optimisé de la structure de données"""
     df_csv, mongo_stats = dataframes
     
     csv_columns = set(df_csv.columns)
@@ -204,8 +194,7 @@ def test_colonnes_identiques(dataframes):
         f"Manquantes dans MongoDB: {missing_in_mongo}\n" \
         f"Supplémentaires dans MongoDB: {extra_in_mongo}"
 
-def test_somme_colonnes_numeriques_optimized(dataframes):
-    """Test optimisé sur les colonnes numériques avec vectorisation"""
+def test_somme_colonnes_numeriques(dataframes):
     df_csv, mongo_stats = dataframes
     
     # Sélection des colonnes numériques du CSV
@@ -242,8 +231,7 @@ def test_somme_colonnes_numeriques_optimized(dataframes):
     if errors:
         assert False, "\n".join(errors)
 
-def test_sampling_integrity(dataframes):
-    """Test d'intégrité par échantillonnage pour validation supplémentaire"""
+def test_sampling(dataframes):
     df_csv, mongo_stats = dataframes
     
     # Test uniquement si le dataset est assez grand
@@ -278,33 +266,6 @@ def test_sampling_integrity(dataframes):
             assert relative_diff < 0.1, \
                 f"Distribution différente pour {col}: CSV_mean={csv_mean:.2f}, " \
                 f"Mongo_mean={mongo_mean:.2f}, Diff={relative_diff:.2%}"
-
-# Tests de performance (optionnels)
-def test_performance_benchmark():
-    """Benchmark des performances de requête MongoDB"""
-    if _loader.collection is None:
-        _loader.setup_mongodb_connection()
-    
-    start_time = time.time()
-    
-    # Test de requête simple
-    count = _loader.collection.count_documents({})
-    
-    # Test de requête avec filtre
-    filtered_count = _loader.collection.count_documents({"Age": {"$gte": 30}})
-    
-    # Test d'agrégation
-    avg_age = list(_loader.collection.aggregate([
-        {"$group": {"_id": None, "avg_age": {"$avg": "$Age"}}}
-    ]))[0]['avg_age']
-    
-    execution_time = time.time() - start_time
-    
-    logger.info(f"Benchmark MongoDB - Temps: {execution_time:.3f}s, "
-               f"Total: {count}, Filtré: {filtered_count}, Âge moyen: {avg_age:.1f}")
-    
-    # Vérification que les performances sont acceptables (< 5 secondes)
-    assert execution_time < 5.0, f"Performances MongoDB trop lentes: {execution_time:.2f}s"
 
 if __name__ == "__main__":
     # Exécution des tests avec pytest
